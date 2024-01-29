@@ -1,5 +1,5 @@
 -i https://pypi.org/project/besser-bot-framework/ besser-bot-framework
-langchain
+-i https://pypi.org/project/langchain/ langchain
 langchain-core
 langchain-experimental
 langchain-openai
