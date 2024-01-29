@@ -1,8 +1,8 @@
 -i https://pypi.org/project/besser-bot-framework/ besser-bot-framework
-langchain==0.0.344
-langchain-core==0.1.12
-langchain-experimental==0.0.42
-langchain-openai==0.0.2.post1
+langchain
+langchain-core
+langchain-experimental
+langchain-openai
 pydantic==2.4.2
 pydantic_core==2.10.1
 python-dotenv==1.0.1
