@@ -1,9 +1,6 @@
 -i https://pypi.org/project/besser-bot-framework/ besser-bot-framework
 -i https://pypi.org/project/langchain/ langchain
 -i https://pypi.org/project/langchain-core/ langchain-core
-pydantic
-pydantic_core
-python-dotenv
-typing
-typing-inspect
-typing_extensions
+-i https://pypi.org/project/pydantic/ pydantic
+-i https://pypi.org/project/python-dotenv/ python-dotenv
+-i https://pypi.org/project/typing/ typing
