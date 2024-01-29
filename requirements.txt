@@ -1,6 +1,6 @@
 -i https://pypi.org/project/besser-bot-framework/ besser-bot-framework
 -i https://pypi.org/project/langchain/ langchain
--I https://pypi.org/project/langchain-core/ langchain-core
+-i https://pypi.org/project/langchain-core/ langchain-core
 langchain-experimental==0.0.42
 langchain-openai==0.0.2.post1
 pydantic==2.4.2
