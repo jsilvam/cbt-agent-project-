@@ -1,4 +1,4 @@
-besser-bot-framework
+-i https://pypi.org/project/besser-bot-framework/ besser-bot-framework
 langchain==0.0.344
 langchain-core==0.1.12
 langchain-experimental==0.0.42
