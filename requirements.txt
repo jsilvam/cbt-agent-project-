@@ -1,6 +1,9 @@
--i https://pypi.org/project/besser-bot-framework/ besser-bot-framework
--i https://pypi.org/project/langchain/ langchain
--i https://pypi.org/project/langchain-core/ langchain-core
--i https://pypi.org/project/pydantic/ pydantic
--i https://pypi.org/project/python-dotenv/ python-dotenv
--i https://pypi.org/project/typing/ typing
+websocket-client
+besser-bot-framework
+langchain
+langchain-core
+langchain-openai
+pydantic
+python-dotenv
+typing
+keras==2.14.0
