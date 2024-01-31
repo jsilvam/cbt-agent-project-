@@ -6,10 +6,19 @@ from agent import Agent
 from langchain.memory import ConversationBufferMemory
 from enum import Enum
 import json
+import sys
+from dotenv import load_dotenv, find_dotenv
+import socket
+
+import os
+_ = load_dotenv(find_dotenv()) 
 
 llm = Agent()
-#llm.set_chatopenai_llm()
-llm.set_azurechat_llm()
+
+if os.environ['OPENAI_API_TYPE'] == "openai":
+    llm.set_chatopenai_llm()
+elif os.environ['OPENAI_API_TYPE'] == "azure":
+    llm.set_azurechat_llm()
 
 # Configure the logging module
 logging.basicConfig(level=logging.INFO, format='{levelname} - {asctime}: {message}', style='{')
@@ -19,7 +28,7 @@ bot = Bot('CBT_BOT')
 # Load bot properties stored in a dedicated file
 bot.load_properties('config.ini')
 # Define the platform your chatbot will use
-websocket_platform = bot.use_websocket_platform(use_ui=True)
+websocket_platform = bot.use_websocket_platform(use_ui=False)
 
 # STATES
 
@@ -74,13 +83,14 @@ class bot_messages(Enum):
     end_options = ['It does not help. I still feel bad.', 'Yes, it helps. I am good now.']
     end_cbt = """I hope you feel better now. Thanks for your time and have a nice day!"""
     fallback = """I'm here to support you. Whenever you feel comfortable, please feel free to share the situation that made you feel bad. 
-                Remember, I'm here to help you think about it in a more positive way.}"""
+                Remember, I'm here to help you think about it in a more positive way.
+                Can you please provide more information about the situation that made you feel bad?"""
 
 
 # STATES BODIES' DEFINITION + TRANSITIONS
 
 def initial_body(session: Session):
-    session.reply(bot_messages.disclaimer.value)
+    """Initial state body to be executed when the bot is started."""
     memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
     session.set('bot_memory', memory)
     llm.set_memory(memory)
@@ -93,10 +103,22 @@ initial_state.set_body(initial_body)
 initial_state.when_intent_matched_go_to(bad_situation_intent, bad_situation_state)
 initial_state.when_intent_matched_go_to(end_cbt_intent, end_cbt_state)
 
+def extract_abc_information(session: Session):
+    """Extract ABC (Activating Event, Belief, Consequence) information from the user message and store it as structured data."""
+    cbt_struct_data: str = session.get('cbt_struct_data')
+    print("extract_abc_information", type(cbt_struct_data), cbt_struct_data)
+
+    response = llm.extract_abc_information(session.message)
+    if not (cbt_struct_data is None): print(cbt_struct_data, 'cbt before combine:', len(cbt_struct_data))
+    print(response, 'response before combine:', len(response))
+    if cbt_struct_data is None:
+        cbt_struct_data = "[]"
+    response = llm.combine_abc_information(abc_json=cbt_struct_data, input=json.dumps(response, indent = 4))
+    print(response, 'response after combine:', len(response))
+    session.set('cbt_struct_data', response)
 
 def bad_situation_body(session: Session):
-    #session.reply("SITUATION")
-
+    """Bad situation state body to be executed when the user has selected that he had a bad situation."""
     cbt_struct_data = None
     session.set('cbt_struct_data', cbt_struct_data)
 
@@ -104,60 +126,74 @@ def bad_situation_body(session: Session):
     memory: ConversationBufferMemory = session.get('bot_memory')
     memory.chat_memory.add_user_message(bot_messages.bad_situation.value)
 
-
-
-def check_cbt_json(session: Session, event_params: dict):
-    print("check_cbt_json", session.get('cbt_struct_data'))
-    #if event_params is not None:
+def has_correct_format(session: Session):
+    """Check if the cbt_struct_data has the correct format with inforamtion extracted from the chat conversation."""
+    if session.get('cbt_struct_data') is None:
+        return False
+    
+    cbt_struct_data: str = session.get('cbt_struct_data')
+    cbt_struct_data = json.loads(cbt_struct_data)
+    print("has_correct_format", cbt_struct_data)
+    if not isinstance(cbt_struct_data, list):
+        cbt_struct_data = None
+        session.set('cbt_struct_data', cbt_struct_data)
+        return False
+    
     return True
-    #else:
-        #return False
+
+def check_cbt_json(session: Session, event_params: dict):  
+    """Check if the cbt_struct_data in json requires to be completed by asking further questions."""
+    if not has_correct_format(session):
+        return True
+    
+    cbt_struct_data: str = session.get('cbt_struct_data')
+    cbt_struct_data = json.loads(cbt_struct_data)
+    print("check_cbt_json", cbt_struct_data)
+
+    for s in cbt_struct_data:
+        if s["beliefs_in_event"] == "":
+            return True
+    return False
 
 bad_situation_state.set_body(bad_situation_body)
 bad_situation_state.when_intent_matched_go_to(end_cbt_intent, end_cbt_state)
 bad_situation_state.when_event_go_to(check_cbt_json, question_state, event_params={})
 
-def extract_abc_information(session: Session):
-    """Extract ABC information from the user message and store it as structured data."""
-    cbt_struct_data: str = session.get('cbt_struct_data')
-    response = llm.extract_abc_information(session.message)
-    print(response)
-    if cbt_struct_data is None:
-        cbt_struct_data = "[]"
-    response = llm.combine_abc_information(abc_json=cbt_struct_data, input=json.dumps(response, indent = 4))
-    print(response)
-    session.set('cbt_struct_data', response)
 
 def question_body(session: Session):
-    #session.reply("QUESTION")
+    """Question state body to be executed when the structured data is still incomplete."""
     extract_abc_information(session)
     response = llm.belief_questions(session.message)
 
     session.reply(response)
 
-def check_cbt_information(session: Session, event_params: dict):
+def is_cbt_complete(session: Session, event_params: dict):
+    """Check if the cbt_struct_data in json is complete to generate a recommendation."""
+    if not has_correct_format(session):
+        return False
+    
     cbt_struct_data: str = session.get('cbt_struct_data')
     cbt_struct_data = json.loads(cbt_struct_data)
-    print("check_cbt_information", cbt_struct_data)
-    if cbt_struct_data is None:
-        return False
-    else: 
-        for s in cbt_struct_data:
-            if "" in s.values():
-                return False
+    print("is_cbt_complete", cbt_struct_data)
+
+    for s in cbt_struct_data:
+        if "" in s.values():
+            return False
+    
     return True
 
-def check_cbt_incomplete(session: Session, event_params: dict):
-    return not check_cbt_information(session, event_params)
+def is_cbt_incomplete(session: Session, event_params: dict):
+    """Check if the cbt_struct_data in json is incomplete to request more information from the user."""
+    return not is_cbt_complete(session, event_params)
 
 question_state.set_body(question_body)
 question_state.when_intent_matched_go_to(end_cbt_intent, end_cbt_state)
-question_state.when_event_go_to(check_cbt_information, recommendation_state, event_params={})
-question_state.when_event_go_to(check_cbt_incomplete, incomplete_state, event_params={})
+question_state.when_event_go_to(is_cbt_complete, recommendation_state, event_params={})
+question_state.when_event_go_to(is_cbt_incomplete, incomplete_state, event_params={})
 
 
 def incomplete_body(session: Session):
-    #session.reply("INCOMPLETE")
+    """Incomplete state body to be executed when the structured data is still incomplete."""
     extract_abc_information(session)
     cbt_struct_data: str = session.get('cbt_struct_data')
     response = llm.complete_questions(abc_json=cbt_struct_data, input=session.message)
@@ -166,12 +202,13 @@ def incomplete_body(session: Session):
 
 incomplete_state.set_body(incomplete_body)
 incomplete_state.when_intent_matched_go_to(end_cbt_intent, end_cbt_state)
-incomplete_state.when_event_go_to(check_cbt_information, recommendation_state, event_params={})
-incomplete_state.when_event_go_to(check_cbt_incomplete, question_state, event_params={})
+incomplete_state.when_event_go_to(is_cbt_complete, recommendation_state, event_params={})
+incomplete_state.when_event_go_to(is_cbt_incomplete, question_state, event_params={})
 
 
 def recommendation_body(session: Session):
-    #session.reply("RECOMMENDATION")
+    """Recommendation state body to be executed when the structured data is complete."""
+    extract_abc_information(session)
     cbt_struct_data: str = session.get('cbt_struct_data')
     response = llm.counterarguments_for_fallacies(cbt_struct_data)
     session.reply(response)
@@ -184,6 +221,7 @@ recommendation_state.when_intent_matched_go_to(bad_situation_intent,question_sta
 
 
 def end_cbt_body(session: Session):
+    """End_CBT state body to be executed when the user has selected that he does not need more help."""
     session.reply(bot_messages.end_cbt.value)
 
 end_cbt_state.set_body(end_cbt_body)
@@ -192,39 +230,25 @@ end_cbt_state.go_to(initial_state)
 
 
 def fallback_body(session: Session):
-    #session.reply("FALLBACK")
+    """Fallback state body to be executed when the bot does not understand the user message.
+    It has a reminder of the bot purpose and a default message to be sent to the user."""
     extract_abc_information(session)
     session.reply(bot_messages.fallback.value)
+    memory: ConversationBufferMemory = session.get('bot_memory')
+    memory.chat_memory.add_user_message(bot_messages.fallback.value)
 
 
 bot.set_global_fallback_body(fallback_body)
 
-
-# RUN APPLICATION
 
 if __name__ == '__main__':
-    bot.run()
 
+    def is_port_in_use(port: int = os.environ['STREAMLIT_PORT']) -> bool:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            return s.connect_ex((os.environ['STREAMLIT_HOST'], port)) == 0
 
-"""
-def fallback_body(session: Session):
-    session.reply("Bot is working on your request, please wait a moment...")
+    if not is_port_in_use(8765):
+        bot.run()
+    else: 
+        sys.exit(1)
 
-    prompt = llm.memory_prompt()
-    response = llm.llm_chain(session.message)
-    session.reply(response)
-
-    response = llm.belief_questions(session.message)
-    print(response)
-    session.reply(response)
-
-
-    response = llm.extract_abc_information(session.message)
-    print(response)
-    session.reply(json.dumps(response, indent = 4) )
-    response = llm.counterarguments_for_fallacies(json.dumps(response, indent = 4) )
-    print(response)
-    session.reply(response)
-
-bot.set_global_fallback_body(fallback_body)
-"""

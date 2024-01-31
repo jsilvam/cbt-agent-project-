@@ -11,7 +11,7 @@ from langchain.prompts import (
     MessagesPlaceholder,
 )
 from langchain.schema import SystemMessage
-from langchain.utils.openai_functions import convert_pydantic_to_openai_function
+from langchain_core.utils.function_calling import convert_pydantic_to_openai_function
 from langchain.output_parsers.openai_functions import JsonKeyOutputFunctionsParser
 from pydantic.v1 import BaseModel, Field
 from typing import List
@@ -35,8 +35,8 @@ class prompts(Enum):
                 Please generate two follow-up questions to understand the full situation described by the user."""
     TREATMENT = """The following JSON is information about various though fallacies in the way of thinking. 
                 You should provide counterarguments reflecting a positive logical way of thinking.
-                Please be polite and provide a response using a a short argument. 
-                Just provide one paragraph per each fallacy as an answer, do not add any additional context."""
+                Please be polite and provide a response using an argument per each belief. 
+                Just provide one paragraph per each belief as an answer, do not add any additional context."""
 
 
 class ABC_information(BaseModel):
@@ -114,7 +114,7 @@ class Agent:
     
     def combine_abc_information(self, abc_json:str, input: str):
         abc_memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
-        abc_memory.chat_memory.add_ai_message(abc_json)
+        abc_memory.chat_memory.add_user_message(abc_json)
         prompt = self.chain_prompt(sysMessage=prompts.COMBINE.value)
         llm_chain = LLMChain(prompt=prompt, llm=self._llm , verbose=False, memory=abc_memory)
         response = llm_chain.predict(human_input=input)
@@ -139,11 +139,3 @@ class Agent:
         llm_chain = LLMChain(prompt=prompt, llm=self._llm , verbose=False, memory=self._memory)
         response = llm_chain.predict(human_input=input)
         return response
-
-
-agent = Agent()
-agent.set_azurechat_llm()
-abc_json = "[{'activating_event': 'BAD', 'beliefs_in_event': '', 'consequences': ''}]"
-input = "[{'activating_event': 'divorce', 'beliefs_in_event': 'I didn’t want this divorce', 'consequences': 'I have been very depressed about it'}, {'activating_event': 'divorce', 'beliefs_in_event': 'she divorced me', 'consequences': 'I must be the world’s biggest loser'}]"
-#response = agent.combine_abc_information(abc_json=abc_json, input=input)
-#print(response)
