@@ -41,11 +41,6 @@ end_cbt_state = bot.new_state('end_cbt_state')
 
 # INTENTS
 
-hello_intent = bot.new_intent('hello_intent', [
-    'hello',
-    'hi',
-])
-
 bad_situation_intent= bot.new_intent('bad_situation_intent', [
     'bad',
     'awful',
@@ -141,7 +136,7 @@ def has_correct_format(session: Session):
     
     return True
 
-def check_cbt_json(session: Session, event_params: dict):  
+def check_cbt_data(session: Session, event_params: dict):  
     """Check if the cbt_struct_data in json requires to be completed by asking further questions."""
     if not has_correct_format(session):
         return True
@@ -157,7 +152,7 @@ def check_cbt_json(session: Session, event_params: dict):
 
 bad_situation_state.set_body(bad_situation_body)
 bad_situation_state.when_intent_matched_go_to(end_cbt_intent, end_cbt_state)
-bad_situation_state.when_event_go_to(check_cbt_json, question_state, event_params={})
+bad_situation_state.when_event_go_to(check_cbt_data, question_state, event_params={})
 
 
 def question_body(session: Session):
@@ -167,7 +162,7 @@ def question_body(session: Session):
 
     session.reply(response)
 
-def is_cbt_complete(session: Session, event_params: dict):
+def is_cbt_data_complete(session: Session, event_params: dict):
     """Check if the cbt_struct_data in json is complete to generate a recommendation."""
     if not has_correct_format(session):
         return False
@@ -182,14 +177,14 @@ def is_cbt_complete(session: Session, event_params: dict):
     
     return True
 
-def is_cbt_incomplete(session: Session, event_params: dict):
+def is_cbt_data_incomplete(session: Session, event_params: dict):
     """Check if the cbt_struct_data in json is incomplete to request more information from the user."""
-    return not is_cbt_complete(session, event_params)
+    return not is_cbt_data_complete(session, event_params)
 
 question_state.set_body(question_body)
 question_state.when_intent_matched_go_to(end_cbt_intent, end_cbt_state)
-question_state.when_event_go_to(is_cbt_complete, recommendation_state, event_params={})
-question_state.when_event_go_to(is_cbt_incomplete, incomplete_state, event_params={})
+question_state.when_event_go_to(is_cbt_data_complete, recommendation_state, event_params={})
+question_state.when_event_go_to(is_cbt_data_incomplete, incomplete_state, event_params={})
 
 
 def incomplete_body(session: Session):
@@ -202,8 +197,8 @@ def incomplete_body(session: Session):
 
 incomplete_state.set_body(incomplete_body)
 incomplete_state.when_intent_matched_go_to(end_cbt_intent, end_cbt_state)
-incomplete_state.when_event_go_to(is_cbt_complete, recommendation_state, event_params={})
-incomplete_state.when_event_go_to(is_cbt_incomplete, question_state, event_params={})
+incomplete_state.when_event_go_to(is_cbt_data_complete, recommendation_state, event_params={})
+incomplete_state.when_event_go_to(is_cbt_data_incomplete, question_state, event_params={})
 
 
 def recommendation_body(session: Session):
@@ -243,11 +238,11 @@ bot.set_global_fallback_body(fallback_body)
 
 if __name__ == '__main__':
 
-    def is_port_in_use(port: int = os.environ['STREAMLIT_PORT']) -> bool:
+    def is_port_in_use(port: int) -> bool:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             return s.connect_ex((os.environ['STREAMLIT_HOST'], port)) == 0
 
-    if not is_port_in_use(8765):
+    if not is_port_in_use(int(os.environ['STREAMLIT_PORT'])):
         bot.run()
     else: 
         sys.exit(1)
