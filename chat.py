@@ -64,12 +64,11 @@ def main():
 
         def _run(job):
             print (f'\nRunning job: {job}\n')
-            #proc = subprocess.Popen(job)
             try:
                 proc = subprocess.Popen(job)
                 proc.wait()
             except subprocess.CalledProcessError as e:
-                print('Chat app error: ', e)
+                print('Subprocess error')
                 os.killpg(os.getpgid(proc.pid), signal.SIGTERM) 
             return proc
 

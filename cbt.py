@@ -30,6 +30,7 @@ bot.load_properties('config.ini')
 # Define the platform your chatbot will use
 websocket_platform = bot.use_websocket_platform(use_ui=False)
 
+
 # STATES
 
 initial_state = bot.new_state('initial_state', initial=True)
@@ -240,9 +241,9 @@ if __name__ == '__main__':
 
     def is_port_in_use(port: int) -> bool:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            return s.connect_ex((os.environ['STREAMLIT_HOST'], port)) == 0
+            return s.connect_ex((os.environ['WEBSOCKET_HOST'], port)) == 0
 
-    if not is_port_in_use(int(os.environ['STREAMLIT_PORT'])):
+    if not is_port_in_use(int(os.environ['WEBSOCKET_PORT'])):
         bot.run()
     else: 
         sys.exit(1)
