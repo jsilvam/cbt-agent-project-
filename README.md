@@ -30,6 +30,8 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
+Cognitive Behavioral Therapy (CBT) is a form of psychotherapy that aims to improve mental health by changing negative patterns of thought and behavior. It involves identifying and challenging fallecies and learning practical self-help strategies. CBT is commonly used to treat anxiety, depression, and other mental health conditions. This project aims develop a chatbot that simulates a CBT session.
+
 The project is developed with the BESSER Bot Framework (BBF). BBF facilitate the definition and deployment of chatbots by defining the conversation logic using states, intents and transitions. The following figure shows the bot states, intents and transitions implemented.
 
 
@@ -130,19 +132,28 @@ A deployed version of the project is available in the following link: [Chat-CBT]
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Add Examples ...
+Upon accessing the previous link, you will be greeted with a welcome message as shown in the figure. To the left, there is an option to follow a link for further details on CBT.
 
 
 ![bot start](img/bot_welcome.png)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+Below is an example of the interaction with the chatbot.
+
+![bot example](img/example_work.png)
+
+Choosing the second option will cause the bot to terminate the ongoing session and initiate a new one. If you select the first option because you are still feeling bad, the chatbot will continue the conversation, asking more questions and offering counterarguments aimed at altering your way of thinking and eventually make you feel better.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 <!-- RECOMMENDATIONS -->
 ## Recommendations
 
-Add Recommendations ...
+As future work, some adjustments can be performed. Regarding the welcoming message, the statement outlining the project's purpose could be reformulated to enhance user engagement. The conclusion sometimes is rushed, with users quickly affirming their improved state. This could be expanded to allow users the option to continue the dialogue, suggesting a more gradual resolution. Moreover, the recommendation for users to adopt coping mechanisms could be presented as an interactive query, inviting users to delve deeper into these strategies.
+
+Put something more techinical here, like Karthic suggested, I do not remember what exatcly. 
 
 <!-- TEAM -->
 ## Team
