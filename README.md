@@ -137,16 +137,17 @@ Upon accessing the previous link, you will be greeted with a welcome message as 
 
 ![bot start](img/bot_welcome.png)
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 Below is an example of the interaction with the chatbot.
 
 ![bot example](img/example_work.png)
 
 Choosing the second option will cause the bot to terminate the ongoing session and initiate a new one. If you select the first option because you are still feeling bad, the chatbot will continue the conversation, asking more questions and offering counterarguments aimed at altering your way of thinking and eventually make you feel better.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+The following illustrates an interaction with the chatbot tailored for someone who has recently been diagnosed with diabetes. In this scenario, the chatbot continuously poses questions to uncover the central thought affecting the individual.
 
+![bot example2](img/example_diabetes.png)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- RECOMMENDATIONS -->
 ## Recommendations
