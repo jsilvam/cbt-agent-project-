@@ -154,7 +154,7 @@ The following illustrates an interaction with the chatbot tailored for someone w
 
 As future work, some adjustments can be performed. Regarding the welcoming message, the statement outlining the project's purpose could be reformulated to enhance user engagement. The conclusion sometimes is rushed, with users quickly affirming their improved state. This could be expanded to allow users the option to continue the dialogue, suggesting a more gradual resolution. Moreover, the recommendation for users to adopt coping mechanisms could be presented as an interactive query, inviting users to delve deeper into these strategies.
 
-Put something more techinical here, like Karthic suggested, I do not remember what exatcly. 
+Another recommendation is to use Retrieval Augmented Generation (RAG) to reduce hallucinations issues by providng recommendations from a list of predefined outputs that are related to the fallacy identified by the LLM in the user input. 
 
 <!-- TEAM -->
 ## Team
