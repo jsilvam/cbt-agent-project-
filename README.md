@@ -156,10 +156,21 @@ As future work, some adjustments can be performed. Regarding the welcoming messa
 
 Another recommendation is to use Retrieval Augmented Generation (RAG) to reduce hallucinations issues by providng recommendations from a list of predefined outputs that are related to the fallacy identified by the LLM in the user input. 
 
+### Enhancing the Chatbot with a Custom Model and Dataset
+
+To significantly improve the chatbot's ability to identify and interact with users about their cognitive fallacies, we recommend the development of a custom model trained on a specialized dataset. This dataset should encompass a broad range of cognitive distortions, derived from anonymized therapy sessions, scenarios created by mental health professionals, and existing psychological research. Fine-tuning an open-source LLM with this rich dataset will enable the chatbot to detect subtle indications of cognitive fallacies in user inputs and provide therapeutic responses that are both relevant and grounded in CBT practices. This approach aims to strike a balance between personalized interaction and adherence to psychological principles, enhancing the chatbot's utility as a therapeutic tool.
+
+### Prioritizing Ethical and Privacy Considerations
+
+The implementation of a custom model for therapeutic purposes must be accompanied by stringent ethical and privacy safeguards. It is imperative to ensure the confidentiality and security of user data through robust encryption, secure storage practices, and adherence to privacy regulations such as GDPR and HIPAA. Ethically, the chatbot must be designed to avoid biases and harmful assumptions, incorporating guidelines to mitigate potential risks and enabling human oversight for quality control. Transparency regarding the chatbot's limitations and offering users the option to seek human support are essential ethical practices. These measures are crucial not only for user protection but also for fostering trust in the technology, thereby enhancing its effectiveness and user engagement.
+
+Incorporating these recommendations will pave the way for a more sophisticated, ethical, and user-centric chatbot.
+
+
 <!-- TEAM -->
 ## Team
 * Dulce Canha
 * Francesco Lodola
 * Jonathan Silva
-* Karthick Panner
+* Karthick Panner Selvam
 * Shuai Ren
